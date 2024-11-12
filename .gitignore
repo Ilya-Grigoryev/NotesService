@@ -1,0 +1,9 @@
+# System files and editor configurations
+.DS_Store
+.vscode/
+
+# Dependencies folders
+vendor/
+
+# Composer lock file
+composer.lock
