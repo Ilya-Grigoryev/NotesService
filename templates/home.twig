@@ -1,9 +1,142 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Welcome to your notes!</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOTES</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .note-block {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .note-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        .note-body {
+            font-size: 1rem;
+        }
+        .note-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .delete-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        .edit-btn {
+            margin-left: 10px;
+        }
+    </style>
 </head>
 <body>
-<h1>Here will be the main page soon</h1>
+
+<div class="container mt-5">
+    <h1 class="text-center">Notes</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">New note</h5>
+            <form id="newNoteForm">
+                <div class="mb-3">
+                    <label for="noteTitle" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="noteTitle" placeholder="Note's title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="noteBody" class="form-label">Content</label>
+                    <textarea class="form-control" id="noteBody" rows="3" placeholder="Note's content" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">New Note!</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="notesList">
+        {% for note in notes %}
+        <div class="note-block card">
+            <div class="card-body">
+                <h5 class="note-title">{{ note.title }}</h5>
+                <p class="note-body">{{ note.content }}</p>
+                <div class="note-actions">
+                    <button class="delete-btn" data-id="{{ note.id }}">&times;</button>
+                    <a href="/note/{{ note.id }}" class="btn btn-warning edit-btn">Edit</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#newNoteForm').submit(function(event) {
+            event.preventDefault();
+
+            const title = $('#noteTitle').val();
+            const content = $('#noteBody').val();
+
+            let formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+
+            const noteBlock = `
+                <div class="note-block card">
+                    <div class="card-body">
+                        <h5 class="note-title">${title}</h5>
+                        <p class="note-body">${content}</p>
+                        <div class="note-actions">
+                            <button class="delete-btn">&times;</button>
+                            <a href="/edit/3" class="btn btn-warning edit-btn">Редактировать</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $.ajax({
+                url: '/api/notes',
+                method: 'POST',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function (response) {
+                    $('#notesList').append(noteBlock);
+                    $('#newNoteForm')[0].reset();
+                }.bind(this),
+                error: function () {
+                    alert('Error (POST)');
+                }
+            });
+        });
+
+        $(document).on('click', '.delete-btn', function() {
+
+            const noteId = $(this).data('id');
+
+            $.ajax({
+                url: '/api/notes/' + noteId,
+                method: 'DELETE',
+                success: function(response) {
+                    $(this).closest('.note-block').remove();
+                }.bind(this),
+                error: function() {
+                    alert('Error (DELETE)');
+                }
+            });
+        });
+    });
+</script>
+
 </body>
 </html>

@@ -5,5 +5,8 @@
 # Dependencies folders
 vendor/
 
+# Database
+data/
+
 # Composer lock file
 composer.lock
